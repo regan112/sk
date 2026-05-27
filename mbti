@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당곡고 MBTI 포켓몬 테스트</title>
+    <!-- 구글 폰트 적용 (둥글둥글하고 귀여운 느낌의 폰트) -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <style>
+        /* CSS 스타일 정의: 웹사이트의 시각적인 부분을 담당합니다. */
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 5px solid #ffcb05; /* 포켓몬 공식 노란색 */
+        }
+
+        h1 {
+            color: #3b4cca; /* 포켓몬 공식 파란색 */
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        /* MBTI 입력칸 스타일 */
+        input[type="text"] {
+            width: 70%;
+            padding: 12px 20px;
+            border: 2px solid #ccc;
+            border-radius: 30px;
+            font-size: 18px;
+            text-align: center;
+            text-transform: uppercase; /* 영어 입력 시 대문자로 자동 변환 효과 */
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3b4cca;
+        }
+
+        /* 결과 확인 버튼 스타일 */
+        button {
+            padding: 12px 25px;
+            background-color: #ffcb05;
+            color: #3b4cca;
+            font-weight: bold;
+            font-size: 16px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.1s, background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #e5b704;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* 결과 화면 스타일 */
+        .result-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ddd;
+            display: none; /* 기본 상태에서는 안 보이도록 설정 */
+        }
+
+        .pokemon-img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            margin: 15px 0;
+            animation: bounce 1s infinite alternate; /* 포켓몬이 둥실둥실 움직이는 애니메이션 */
+        }
+
+        .pokemon-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .pokemon-mbti {
+            display: inline-block;
+            background-color: #3b4cca;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .pokemon-desc {
+            color: #555;
+            line-height: 1.6;
+            font-size: 15px;
+            background: #fdfdfd;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        /* 둥실둥실 애니메이션 효과 키프레임 */
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>나의 MBTI 포켓몬 찾기!</h1>
+        <p class="subtitle">나의 MBTI를 입력하면 꼭 닮은 포켓몬을 추천해 드려요.</p>
+        
+        <div class="input-group">
+            <input type="text" id="mbtiInput" placeholder="예: ENFP, ISTJ" maxlength="4">
+            <br>
+            <button onclick="findPokemon()">매칭하기</button>
+        </div>
+
+        <!-- 결과가 출력될 영역 -->
+        <div class="result-container" id="resultContainer">
+            <div class="pokemon-mbti" id="resMbti">MBTI</div>
+            <div class="pokemon-name" id="resName">포켓몬 이름</div>
+            <img class="pokemon-img" id="resImg" src="" alt="포켓몬 이미지">
+            <div class="pokemon-desc" id="resDesc">포켓몬 특징 설명이 들어갑니다.</div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript 객체(Object): 각 MBTI에 해당하는 포켓몬 정보 정의
+        // 이미지 주소는 공인된 PokeAPI의 고화질 공식 아트워크 이미지를 활용했습니다.
+        const pokemonDatabase = {
+            "ISTJ": {
+                name: "이상해씨",
+                imgId: 1,
+                desc: "체계적이고 규칙을 잘 지키는 이상해씨는 책임감이 강하며, 맡은 일을 끝까지 꼼꼼하고 성실하게 해내는 든든한 동반자입니다."
+            },
+            "ISFJ": {
+                name: "럭키",
+                imgId: 113,
+                desc: "조용하고 차분하지만 주변 사람들을 따뜻하게 돌보는 럭키처럼, 남의 기쁨과 슬픔에 깊이 공감하고 헌신하는 치유자 타입입니다."
+            },
+            "INFJ": {
+                name: "뮤",
+                imgId: 151,
+                desc: "신비롭고 통찰력이 뛰어난 뮤처럼, 깊은 신념과 이상을 품고 있으며 조용히 세상을 더 나은 곳으로 변화시키고 싶어 합니다."
+            },
+            "INTJ": {
+                name: "뮤츠",
+                imgId: 150,
+                desc: "독립적이고 전략적인 사고가 뛰어난 뮤츠처럼, 복잡한 문제를 분석하고 해결하는 지적 호기심과 강한 의지를 가지고 있습니다."
+            },
+            "ISTP": {
+                name: "개굴닌자",
+                imgId: 658,
+                desc: "상황 적응력이 뛰어나고 실용적인 개굴닌자처럼, 말보다는 실천을 중요시하며 기계를 다루거나 위기 상황에 대처하는 능력이 뛰어납니다."
+            },
+            "ISFP": {
+                name: "이브이",
+                imgId: 133,
+                desc: "다양한 진화 가능성을 가진 이브이처럼, 예술적인 감각이 있고 온화한 성품을 가졌으며 자유와 조화를 조용히 즐기는 예술가 성향입니다."
+            },
+            "INFP": {
+                name: "삐삐",
+                imgId: 35,
+                desc: "풍부한 상상력과 낭만을 가진 삐삐처럼, 따뜻한 마음을 지니고 자신만의 가치관과 이상적인 세상을 꿈꾸는 낭만주의자입니다."
+            },
+            "INTP": {
+                name: "후딘",
+                imgId: 65,
+                desc: "아이디어가 가득하고 호기심 많은 후딘처럼, 비판적이고 분석적인 사고를 즐기며 새로운 지식을 끊임없이 탐구하는 사색가입니다."
+            },
+            "ESTP": {
+                name: "쥬피썬더",
+                imgId: 135,
+                desc: "스릴을 즐기고 에너지가 넘치는 쥬피썬더처럼, 직관력이 뛰어나며 현실의 문제를 신속하고 감각적으로 해결하는 행동파입니다."
+            },
+            "ESFP": {
+                name: "피카츄",
+                imgId: 25,
+                desc: "모두의 사랑을 받는 피카츄처럼, 사교적이고 쾌활하며 에너지가 넘쳐서 언제나 주변 사람들을 즐겁게 만들어주는 분위기 메이커입니다."
+            },
+            "ENFP": {
+                name: "꼬부기",
+                imgId: 7,
+                desc: "호기심 많고 쾌활한 꼬부기처럼, 새로운 만남과 도전을 즐기며 창의적인 에너지로 주변을 항상 밝고 긍정적으로 만듭니다."
+            },
+            "ENTP": {
+                name: "팬텀",
+                imgId: 94,
+                desc: "장난꾸러기이면서 기발한 팬텀처럼, 고정관념에 도전하기를 좋아하고 유쾌하며 독창적인 아이디어로 토론과 논쟁을 즐기는 발명가 성향입니다."
+            },
+            "ESTJ": {
+                name: "윈디",
+                imgId: 59,
+                desc: "강인하고 믿음직한 윈디처럼, 지도력이 뛰어나며 일의 우선순위를 정확하게 매겨 신속하고 체계적으로 프로젝트를 이끄는 리더입니다."
+            },
+            "ESFJ": {
+                name: "푸크린",
+                imgId: 40,
+                desc: "정이 많고 다정한 푸크린처럼, 사람들과의 관계를 소중히 여기며 타인에게 실질적인 도움을 주며 화합을 도모하는 따뜻한 조력자입니다."
+            },
+            "ENFJ": {
+                name: "망나뇽",
+                imgId: 149,
+                desc: "타인을 돕는 정의로운 망나뇽처럼, 청중을 사로잡는 강력한 카리스마와 온화함을 겸비해 사람들을 긍정적인 길로 인도하는 교육자형 리더입니다."
+            },
+            "ENTJ": {
+                name: "리자몽",
+                imgId: 6,
+                desc: "열정적이고 도전적인 리자몽처럼, 원대한 목표를 향해 추진력 있게 나아가며 장기적인 안목으로 조직을 장악해 나가는 당찬 통솔자입니다."
+            }
+        };
+
+        function findPokemon() {
+            // 입력값 가져오기 (양 끝 공백을 지우고, 대문자로 변환)
+            const inputVal = document.getElementById("mbtiInput").value.trim().toUpperCase();
+            
+            // 결과 영역 Element 가져오기
+            const resultContainer = document.getElementById("resultContainer");
+            const resMbti = document.getElementById("resMbti");
+            const resName = document.getElementById("resName");
+            const resImg = document.getElementById("resImg");
+            const resDesc = document.getElementById("resDesc");
+
+            // 예외 처리: 데이터베이스에 입력한 MBTI가 존재하는지 확인
+            if (pokemonDatabase[inputVal]) {
+                const matched = pokemonDatabase[inputVal];
+
+                // 데이터를 결과 화면에 대입
+                resMbti.innerText = inputVal;
+                resName.innerText = matched.name;
+                resDesc.innerText = matched.desc;
+                
+                // PokeAPI에서 공식 고해상도 이미지를 가져옵니다.
+                resImg.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${matched.imgId}.png`;
+                resImg.alt = matched.name;
+
+                // 결과 영역 보이기
+                resultContainer.style.display = "block";
+            } else {
+                // 잘못된 MBTI를 입력했을 경우
+                alert("올바른 MBTI 4자리를 입력해주세요! (예: ENFP, istj 등)");
+                resultContainer.style.display = "none";
+            }
+        }
+
+        // 입력칸에서 엔터키를 눌렀을 때도 매칭하기 버튼이 실행되도록 해주는 편의 기능
+        document.getElementById("mbtiInput").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                findPokemon();
+            }
+        });
+    </script>
+</body>
+</html>
